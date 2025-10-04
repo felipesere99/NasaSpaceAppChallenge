@@ -1,8 +1,8 @@
 const axios = require('axios');
 
-const apiClient = axios.create({
+const api = axios.create({
   baseURL: 'link',
   timeout: 5000,
 });
 
-module.exports = { apiClient };
+module.exports = { api };
