@@ -7,7 +7,6 @@ const isDateInFuture = (dateString) => {
   return inputDate > today;
 };
 
-// obtenemos las fechas historicas para los ultimos años recibidos por parametro
 const getHistoricalDates = (dateString, yearsBack = 25) => {
   const targetDate = new Date(dateString);
   const dates = [];
@@ -72,6 +71,9 @@ const calculateStatistics = (historicalData) => {
     humidity: historicalData.map(d => d.humidity)
   };
   
+  const rainyDays = historicalData.filter(d => d.precipitation > 0.5).length;
+  const rainProbability = (rainyDays / historicalData.length) * 100;
+  
   const calculateStats = (arr) => {
     const sorted = arr.sort((a, b) => a - b);
     const mean = arr.reduce((sum, val) => sum + val, 0) / arr.length;
@@ -95,25 +97,14 @@ const calculateStatistics = (historicalData) => {
     wind_speed: calculateStats(values.windSpeed),
     precipitation: calculateStats(values.precipitation),
     humidity: calculateStats(values.humidity),
-    sampleSize: historicalData.length
+    sampleSize: historicalData.length,
+    rainProbability: parseFloat(rainProbability.toFixed(1))
   };
 };
 
-//generar el forecast
 const generateForecast = (statistics, targetDate) => {
   if (!statistics) {
     throw new Error('Datos históricos insuficientes para generar pronóstico');
-  }
-  
-  let rainProbability;
-  if (statistics.precipitation.mean < 0.1) {
-    rainProbability = Math.max(5, statistics.precipitation.mean * 200);
-  } else if (statistics.precipitation.mean < 1) {
-    rainProbability = Math.min(30, statistics.precipitation.mean * 40);
-  } else if (statistics.precipitation.mean < 5) {
-    rainProbability = Math.min(60, 20 + statistics.precipitation.mean * 15);
-  } else {
-    rainProbability = Math.min(85, 40 + statistics.precipitation.mean * 8);
   }
   
   const forecast = {
@@ -147,7 +138,7 @@ const generateForecast = (statistics, targetDate) => {
       },
       precipitation: {
         expected_mm: parseFloat(statistics.precipitation.mean.toFixed(2)),
-        probability_of_rain: parseFloat(rainProbability.toFixed(1)),
+        probability_of_rain: statistics.rainProbability,
         range: {
           min: 0,
           max: parseFloat((statistics.precipitation.mean + statistics.precipitation.stdDev).toFixed(2))
