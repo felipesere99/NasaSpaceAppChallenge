@@ -1,6 +1,6 @@
 const { fetchWeather } = require('../services/weatherService');
 
-const getWeatherByCity = async (req, res, next) => {
+const getWeatherByCoordinates = async (req, res, next) => {
   try {
     const { latitude, longitude, date } = req.query;
     
@@ -39,4 +39,4 @@ const getWeatherByCity = async (req, res, next) => {
   }
 };
 
-module.exports = { getWeatherByCity };
+module.exports = { getWeatherByCoordinates };

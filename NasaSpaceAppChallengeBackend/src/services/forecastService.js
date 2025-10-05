@@ -7,7 +7,8 @@ const isDateInFuture = (dateString) => {
   return inputDate > today;
 };
 
-const getHistoricalDates = (dateString, yearsBack = 40) => {
+// obtenemos las fechas historicas para los ultimos años recibidos por parametro
+const getHistoricalDates = (dateString, yearsBack = 25) => {
   const targetDate = new Date(dateString);
   const dates = [];
   
@@ -16,7 +17,6 @@ const getHistoricalDates = (dateString, yearsBack = 40) => {
     const historicalDate = new Date(targetDate);
     historicalDate.setFullYear(historicalYear);
     
-    // Verificar que la fecha no sea futura
     if (historicalDate <= new Date()) {
       dates.push(historicalDate.toISOString().split('T')[0]);
     }
@@ -99,15 +99,22 @@ const calculateStatistics = (historicalData) => {
   };
 };
 
+//generar el forecast
 const generateForecast = (statistics, targetDate) => {
   if (!statistics) {
     throw new Error('Datos históricos insuficientes para generar pronóstico');
   }
   
-  // Calcular probabilidades basadas en datos historicos de la api de la NASA
-  const precipitationDays = statistics.precipitation.mean > 0.1 ? 
-    Math.min(80, statistics.precipitation.mean * 100) : 
-    Math.max(5, statistics.precipitation.mean * 50);
+  let rainProbability;
+  if (statistics.precipitation.mean < 0.1) {
+    rainProbability = Math.max(5, statistics.precipitation.mean * 200);
+  } else if (statistics.precipitation.mean < 1) {
+    rainProbability = Math.min(30, statistics.precipitation.mean * 40);
+  } else if (statistics.precipitation.mean < 5) {
+    rainProbability = Math.min(60, 20 + statistics.precipitation.mean * 15);
+  } else {
+    rainProbability = Math.min(85, 40 + statistics.precipitation.mean * 8);
+  }
   
   const forecast = {
     date: targetDate,
@@ -140,7 +147,7 @@ const generateForecast = (statistics, targetDate) => {
       },
       precipitation: {
         expected_mm: parseFloat(statistics.precipitation.mean.toFixed(2)),
-        probability_of_rain: parseFloat(precipitationDays.toFixed(1)),
+        probability_of_rain: parseFloat(rainProbability.toFixed(1)),
         range: {
           min: 0,
           max: parseFloat((statistics.precipitation.mean + statistics.precipitation.stdDev).toFixed(2))
@@ -165,7 +172,7 @@ const fetchWeatherForecast = async (latitude, longitude, date) => {
     throw new Error('Use el endpoint regular para fechas pasadas o actuales');
   }
   
-  const historicalDates = getHistoricalDates(date, 15);
+  const historicalDates = getHistoricalDates(date, 40);
   
   if (historicalDates.length === 0) {
     throw new Error('No hay suficientes datos históricos disponibles');

@@ -11,7 +11,7 @@ const fetchHistoricalWeather = async (latitude, longitude, date) => {
       start: dateFormatted,
       end: dateFormatted,
       community: 'AG',
-      parameters: 'T2M_MAX,T2M_MIN,WS10M,PRECTOTCORR,RH2M', // se podria llegar a pedir mas datos depende de lo que precisamos, ver doc de la NASA
+      parameters: 'T2M_MAX,T2M_MIN,WS10M,PRECTOTCORR,RH2M', // parametros q estamos usando por ahora
       format: 'JSON'
     },
   });
