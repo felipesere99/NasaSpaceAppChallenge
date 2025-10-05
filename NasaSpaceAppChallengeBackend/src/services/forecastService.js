@@ -152,7 +152,7 @@ const generateForecast = (statistics, targetDate) => {
         }
       }
     },
-    disclaimer: "Pronóstico basado en análisis de datos históricos. No debe usarse para decisiones críticas."
+    disclaimer: "Forecast based on historical data analysis. Not to be used for critical decisions."
   };
   
   return forecast;

@@ -15,6 +15,9 @@ import {
   AlertTriangle,
   CheckCircle,
   MessageSquareQuote,
+  Download,
+  FileText,
+  Database,
 } from "lucide-react";
 import "./Results.css";
 
@@ -94,6 +97,81 @@ export default function Results({ coords, dates, selectedMetrics }) {
   return messages.join(" • ");
 }
 
+  // Download functions
+  const downloadJSON = () => {
+    const dataToDownload = {
+      ...weather,
+      selectedMetrics,
+      downloadDate: new Date().toISOString(),
+    };
+    
+    const blob = new Blob([JSON.stringify(dataToDownload, null, 2)], {
+      type: 'application/json',
+    });
+    
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `weather-forecast-${weather.date}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const downloadCSV = () => {
+    const csvData = [];
+    
+    // Header
+    csvData.push(['Metric', 'Value', 'Unit', 'Range Min', 'Range Max']);
+    
+    // General info
+    csvData.push(['Date', weather.date, '', '', '']);
+    csvData.push(['Type', weather.type, '', '', '']);
+    csvData.push(['Latitude', weather.location.latitude, '°', '', '']);
+    csvData.push(['Longitude', weather.location.longitude, '°', '', '']);
+    
+    if (weather.confidence) {
+      csvData.push(['Confidence', weather.confidence, '%', '', '']);
+    }
+    
+    // Metrics based on selection
+    if (selectedMetrics.temperature && weather.predicted?.temperature) {
+      csvData.push(['Temperature Max', weather.predicted.temperature.max.value, '°C', 
+                   weather.predicted.temperature.max.range.min, weather.predicted.temperature.max.range.max]);
+      csvData.push(['Temperature Min', weather.predicted.temperature.min.value, '°C', 
+                   weather.predicted.temperature.min.range.min, weather.predicted.temperature.min.range.max]);
+    }
+    
+    if (selectedMetrics.wind && weather.predicted?.wind_speed) {
+      csvData.push(['Wind Speed', weather.predicted.wind_speed.value, 'm/s', 
+                   weather.predicted.wind_speed.range.min, weather.predicted.wind_speed.range.max]);
+    }
+    
+    if (selectedMetrics.precipitation && weather.predicted?.precipitation) {
+      csvData.push(['Rain Probability', weather.predicted.precipitation.probability_of_rain, '%', '', '']);
+      csvData.push(['Expected Precipitation', weather.predicted.precipitation.expected_mm, 'mm', 
+                   weather.predicted.precipitation.range.min, weather.predicted.precipitation.range.max]);
+    }
+    
+    if (selectedMetrics.humidity && weather.predicted?.humidity) {
+      csvData.push(['Humidity', weather.predicted.humidity.value, '%', 
+                   weather.predicted.humidity.range.min, weather.predicted.humidity.range.max]);
+    }
+    
+    const csvContent = csvData.map(row => row.join(',')).join('\n');
+    
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `weather-forecast-${weather.date}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
 
   return (
     <div className="results-root">
@@ -107,6 +185,20 @@ export default function Results({ coords, dates, selectedMetrics }) {
         <p className="results-subtitle">
           Meteorological analysis for the selected location
         </p>
+        
+        {/* Download buttons - show only when data is available */}
+        {!loading && !error && weather && (
+          <div className="download-actions">
+            <button className="download-btn json-btn" onClick={downloadJSON}>
+              <Database size={16} />
+              Download JSON
+            </button>
+            <button className="download-btn csv-btn" onClick={downloadCSV}>
+              <FileText size={16} />
+              Download CSV
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Loading State */}
@@ -172,7 +264,6 @@ export default function Results({ coords, dates, selectedMetrics }) {
             </div>
           </div>
 
-          {/* 🗣️ Interpretación (comentario humano) */}
           <div className="results-card results-interpretation">
             <h3>
               <MessageSquareQuote size={20} />
@@ -196,7 +287,7 @@ export default function Results({ coords, dates, selectedMetrics }) {
                     <div className="metric">
                       <div className="metric-header">
                         <span className="metric-label">Maximum</span>
-                        <span className="metric-value primary">
+                        <span className="metric-value hot">
                           {weather.predicted.temperature.max.value}°C
                         </span>
                       </div>
@@ -208,7 +299,7 @@ export default function Results({ coords, dates, selectedMetrics }) {
                     <div className="metric">
                       <div className="metric-header">
                         <span className="metric-label">Minimum</span>
-                        <span className="metric-value secondary">
+                        <span className="metric-value cold">
                           {weather.predicted.temperature.min.value}°C
                         </span>
                       </div>
@@ -233,7 +324,7 @@ export default function Results({ coords, dates, selectedMetrics }) {
           )}
 
           {/* Wind Card */}
-          {selectedMetrics.wind && (
+          {selectedMetrics.wind_speed && (
             <div className="results-card">
               <h3>
                 <Wind size={20} />

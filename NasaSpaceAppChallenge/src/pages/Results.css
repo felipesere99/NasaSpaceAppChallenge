@@ -18,6 +18,49 @@
   margin-bottom: 2rem;
 }
 
+/* Download Actions */
+.download-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.download-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-md);
+  background: var(--surface-secondary);
+  color: var(--text-primary);
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(10px);
+}
+
+.download-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-medium);
+  border-color: var(--border-accent);
+}
+
+.download-btn.json-btn:hover {
+  background: linear-gradient(135deg, #4ade80, #22c55e);
+  border-color: #22c55e;
+  color: white;
+}
+
+.download-btn.csv-btn:hover {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  border-color: #1d4ed8;
+  color: white;
+}
+
 .results-back {
   position: absolute;
   top: 1rem;
@@ -218,6 +261,22 @@
   color: var(--accent-purple);
 }
 
+.metric-value.hot {
+  color: #ef4444;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.metric-value.cold {
+  color: #3b82f6;
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
 .metric-range {
   font-size: 0.9rem;
   color: var(--text-tertiary);
@@ -349,18 +408,17 @@
   
   .overview-grid {
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 1rem;
   }
   
-  .results-back {
-    position: static;
-    align-self: flex-start;
-    margin-bottom: 1rem;
+  .download-actions {
+    flex-direction: column;
+    align-items: center;
   }
   
-  .results-header {
-    text-align: left;
-    padding: 1.5rem;
+  .download-btn {
+    width: 100%;
+    max-width: 250px;
+    justify-content: center;
   }
 }
 
