@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import "./Results.css";
 
-export default function Results({ coords, dates }) {
+export default function Results({ coords, dates, selectedMetrics }) {
   const [weather, setWeather] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -33,7 +33,7 @@ export default function Results({ coords, dates }) {
         setWeather(data);
       } catch (error) {
         console.error(error);
-        setError("Error al obtener los datos meteorológicos");
+        setError("Error fetching weather data");
       } finally {
         setLoading(false);
       }
@@ -51,11 +51,11 @@ export default function Results({ coords, dates }) {
       <div className="results-header">
         <button className="results-back" onClick={() => navigate("/")}>
           <ArrowLeft size={18} />
-          Volver al inicio
+          Back to Home
         </button>
-        <h1 className="results-title">Resultados del Pronóstico</h1>
+        <h1 className="results-title">Weather Forecast Results</h1>
         <p className="results-subtitle">
-          Análisis meteorológico para la ubicación seleccionada
+          Meteorological analysis for the selected location
         </p>
       </div>
 
@@ -64,7 +64,7 @@ export default function Results({ coords, dates }) {
           <div className="results-spinner">
             <Activity size={24} />
           </div>
-          <p>Analizando datos meteorológicos...</p>
+          <p>Analyzing weather data...</p>
         </div>
       )}
 
@@ -84,24 +84,24 @@ export default function Results({ coords, dates }) {
           <div className="results-card results-overview">
             <h3>
               <Activity size={20} />
-              Información General
+              General Information
             </h3>
             <div className="overview-grid">
               <div className="overview-item">
                 <Calendar size={18} />
-                <span className="overview-label">Fecha</span>
+                <span className="overview-label">Date</span>
                 <span className="overview-value">{weather.date}</span>
               </div>
               <div className="overview-item">
                 <CheckCircle size={18} />
-                <span className="overview-label">Tipo</span>
+                <span className="overview-label">Type</span>
                 <span className="overview-value">
-                  {weather.type === "forecast" ? "Pronóstico" : "Histórico"}
+                  {weather.type === "forecast" ? "Forecast" : "Historical"}
                 </span>
               </div>
               <div className="overview-item">
                 <MapPin size={18} />
-                <span className="overview-label">Ubicación</span>
+                <span className="overview-label">Location</span>
                 <span className="overview-value">
                   {weather.location.latitude.toFixed(4)}, {weather.location.longitude.toFixed(4)}
                 </span>
@@ -109,7 +109,7 @@ export default function Results({ coords, dates }) {
               {weather.confidence && (
                 <div className="overview-item">
                   <TrendingUp size={18} />
-                  <span className="overview-label">Confianza</span>
+                  <span className="overview-label">Confidence</span>
                   <span className="overview-value confidence">
                     {weather.confidence.toFixed(1)}%
                   </span>
@@ -118,159 +118,167 @@ export default function Results({ coords, dates }) {
             </div>
           </div>
 
-          {/* Temperature Card */}
-          <div className="results-card">
-            <h3>
-              <Thermometer size={20} />
-              Temperatura
-            </h3>
-            <div className="weather-metrics">
-              {weather.type === "forecast" && weather.predicted ? (
-                <>
+          {/* Temperature Card - Only show if selected */}
+          {selectedMetrics.temperature && (
+            <div className="results-card">
+              <h3>
+                <Thermometer size={20} />
+                Temperature
+              </h3>
+              <div className="weather-metrics">
+                {weather.type === "forecast" && weather.predicted ? (
+                  <>
+                    <div className="metric">
+                      <div className="metric-header">
+                        <span className="metric-label">Maximum</span>
+                        <span className="metric-value primary">
+                          {weather.predicted.temperature.max.value}°C
+                        </span>
+                      </div>
+                      <div className="metric-range">
+                        Range: {formatRange(weather.predicted.temperature.max.range)}°C
+                      </div>
+                    </div>
+                    <div className="metric">
+                      <div className="metric-header">
+                        <span className="metric-label">Minimum</span>
+                        <span className="metric-value secondary">
+                          {weather.predicted.temperature.min.value}°C
+                        </span>
+                      </div>
+                      <div className="metric-range">
+                        Range: {formatRange(weather.predicted.temperature.min.range)}°C
+                      </div>
+                    </div>
+                  </>
+                ) : (
                   <div className="metric">
                     <div className="metric-header">
-                      <span className="metric-label">Máxima</span>
+                      <span className="metric-label">Average</span>
                       <span className="metric-value primary">
-                        {weather.predicted.temperature.max.value}°C
+                        {weather.temperature?.avg}°C
                       </span>
                     </div>
-                    <div className="metric-range">
-                      Rango: {formatRange(weather.predicted.temperature.max.range)}°C
-                    </div>
-                  </div>
-                  <div className="metric">
-                    <div className="metric-header">
-                      <span className="metric-label">Mínima</span>
-                      <span className="metric-value secondary">
-                        {weather.predicted.temperature.min.value}°C
-                      </span>
-                    </div>
-                    <div className="metric-range">
-                      Rango: {formatRange(weather.predicted.temperature.min.range)}°C
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <div className="metric">
-                  <div className="metric-header">
-                    <span className="metric-label">Promedio</span>
-                    <span className="metric-value primary">
-                      {weather.temperature?.avg}°C
-                    </span>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Wind Card */}
-          <div className="results-card">
-            <h3>
-              <Wind size={20} />
-              Viento
-            </h3>
-            <div className="weather-metrics">
-              <div className="metric">
-                <div className="metric-header">
-                  <span className="metric-label">Velocidad</span>
-                  <span className="metric-value primary">
-                    {weather.type === "forecast" && weather.predicted
-                      ? `${weather.predicted.wind_speed.value} m/s`
-                      : `${weather.wind_speed} m/s`
-                    }
-                  </span>
-                </div>
-                {weather.type === "forecast" && weather.predicted?.wind_speed.range && (
-                  <div className="metric-range">
-                    Rango: {formatRange(weather.predicted.wind_speed.range)} m/s
                   </div>
                 )}
               </div>
             </div>
-          </div>
+          )}
 
-          {/* Precipitation Card */}
-          <div className="results-card">
-            <h3>
-              <CloudRain size={20} />
-              Precipitación
-            </h3>
-            <div className="weather-metrics">
-              {weather.type === "forecast" && weather.predicted ? (
-                <>
-                  <div className="metric">
-                    <div className="metric-header">
-                      <span className="metric-label">Probabilidad de lluvia</span>
-                      <span className="metric-value primary">
-                        {weather.predicted.precipitation.probability_of_rain}%
-                      </span>
-                    </div>
-                  </div>
-                  <div className="metric">
-                    <div className="metric-header">
-                      <span className="metric-label">Cantidad esperada</span>
-                      <span className="metric-value secondary">
-                        {weather.predicted.precipitation.expected_mm} mm
-                      </span>
-                    </div>
-                    <div className="metric-range">
-                      Rango: {formatRange(weather.predicted.precipitation.range)} mm
-                    </div>
-                  </div>
-                </>
-              ) : (
+          {/* Wind Card - Only show if selected */}
+          {selectedMetrics.wind_speed && (
+            <div className="results-card">
+              <h3>
+                <Wind size={20} />
+                Wind
+              </h3>
+              <div className="weather-metrics">
                 <div className="metric">
                   <div className="metric-header">
-                    <span className="metric-label">Cantidad</span>
+                    <span className="metric-label">Speed</span>
                     <span className="metric-value primary">
-                      {weather.precipitation} mm
+                      {weather.type === "forecast" && weather.predicted
+                        ? `${weather.predicted.wind_speed.value} m/s`
+                        : `${weather.wind_speed} m/s`
+                      }
                     </span>
                   </div>
+                  {weather.type === "forecast" && weather.predicted?.wind_speed.range && (
+                    <div className="metric-range">
+                      Range: {formatRange(weather.predicted.wind_speed.range)} m/s
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
             </div>
-          </div>
+          )}
 
-          {/* Humidity Card */}
-          <div className="results-card">
-            <h3>
-              <Droplets size={20} />
-              Humedad
-            </h3>
-            <div className="weather-metrics">
-              <div className="metric">
-                <div className="metric-header">
-                  <span className="metric-label">Nivel</span>
-                  <span className="metric-value primary">
-                    {weather.type === "forecast" && weather.predicted
-                      ? `${weather.predicted.humidity.value}%`
-                      : `${weather.humidity}%`
-                    }
-                  </span>
-                </div>
-                {weather.type === "forecast" && weather.predicted?.humidity.range && (
-                  <div className="metric-range">
-                    Rango: {formatRange(weather.predicted.humidity.range)}%
+          {/* Precipitation Card - Only show if selected */}
+          {selectedMetrics.precipitation && (
+            <div className="results-card">
+              <h3>
+                <CloudRain size={20} />
+                Precipitation
+              </h3>
+              <div className="weather-metrics">
+                {weather.type === "forecast" && weather.predicted ? (
+                  <>
+                    <div className="metric">
+                      <div className="metric-header">
+                        <span className="metric-label">Rain Probability</span>
+                        <span className="metric-value primary">
+                          {weather.predicted.precipitation.probability_of_rain}%
+                        </span>
+                      </div>
+                    </div>
+                    <div className="metric">
+                      <div className="metric-header">
+                        <span className="metric-label">Expected Amount</span>
+                        <span className="metric-value secondary">
+                          {weather.predicted.precipitation.expected_mm} mm
+                        </span>
+                      </div>
+                      <div className="metric-range">
+                        Range: {formatRange(weather.predicted.precipitation.range)} mm
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="metric">
+                    <div className="metric-header">
+                      <span className="metric-label">Amount</span>
+                      <span className="metric-value primary">
+                        {weather.precipitation} mm
+                      </span>
+                    </div>
                   </div>
                 )}
               </div>
             </div>
-          </div>
+          )}
+
+          {/* Humidity Card - Only show if selected */}
+          {selectedMetrics.humidity && (
+            <div className="results-card">
+              <h3>
+                <Droplets size={20} />
+                Humidity
+              </h3>
+              <div className="weather-metrics">
+                <div className="metric">
+                  <div className="metric-header">
+                    <span className="metric-label">Level</span>
+                    <span className="metric-value primary">
+                      {weather.type === "forecast" && weather.predicted
+                        ? `${weather.predicted.humidity.value}%`
+                        : `${weather.humidity}%`
+                      }
+                    </span>
+                  </div>
+                  {weather.type === "forecast" && weather.predicted?.humidity.range && (
+                    <div className="metric-range">
+                      Range: {formatRange(weather.predicted.humidity.range)}%
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Additional Info Card */}
           {weather.type === "forecast" && (
             <div className="results-card results-info">
               <h3>
                 <Info size={20} />
-                Información Adicional
+                Additional Information
               </h3>
               <div className="info-content">
                 {weather.historical_years_analyzed && (
-                  <p><strong>Años analizados:</strong> {weather.historical_years_analyzed}</p>
+                  <p><strong>Years analyzed:</strong> {weather.historical_years_analyzed}</p>
                 )}
                 {weather.disclaimer && (
                   <div className="disclaimer">
-                    <p><strong>Aviso:</strong> {weather.disclaimer}</p>
+                    <p><strong>Disclaimer:</strong> {weather.disclaimer}</p>
                   </div>
                 )}
               </div>

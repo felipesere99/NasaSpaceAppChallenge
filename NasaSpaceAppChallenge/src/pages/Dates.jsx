@@ -5,19 +5,42 @@ import MapPicker from "../components/MapPicker";
 import { Map, Calendar, Wind, CloudRain, Thermometer, Cloud, MapPin, Activity } from 'lucide-react';
 
 
-export default function Dates({ onBack, dates, setDates, setCoords, onNext }) {
-  const [selected, setSelected] = useState({
-    wind: false,
-    precipitation: false,
-    temperature: false,
-    cloud: false,
-  });
-
+export default function Dates({ onBack, dates, setDates, setCoords, onNext, selectedMetrics, setSelectedMetrics }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [location, setLocation] = useState(null);
 
-  const toggle = (field) =>
-    setSelected((prev) => ({ ...prev, [field]: !prev[field] }));
+  // metricas disponibles desde el back
+  const availableMetrics = [
+    { key: 'temperature', label: 'Temperature', icon: Thermometer },
+    { key: 'wind_speed', label: 'Wind Speed', icon: Wind },
+    { key: 'precipitation', label: 'Precipitation', icon: CloudRain },
+    { key: 'humidity', label: 'Humidity', icon: Cloud }
+  ];
+
+  const toggleMetric = (metricKey) => {
+    setSelectedMetrics(prev => ({
+      ...prev,
+      [metricKey]: !prev[metricKey]
+    }));
+  };
+
+  const selectAll = () => {
+    const allSelected = {};
+    availableMetrics.forEach(metric => {
+      allSelected[metric.key] = true;
+    });
+    setSelectedMetrics(allSelected);
+  };
+
+  const deselectAll = () => {
+    const noneSelected = {};
+    availableMetrics.forEach(metric => {
+      noneSelected[metric.key] = false;
+    });
+    setSelectedMetrics(noneSelected);
+  };
+
+  const hasSelectedMetrics = Object.values(selectedMetrics).some(Boolean);
 
   const handleLocationSelect = ({ lat, lng }) => {
     setCoords({ lat, lng });
@@ -27,13 +50,13 @@ export default function Dates({ onBack, dates, setDates, setCoords, onNext }) {
 
   return (
     <div className="weather-root">
-      <h1 className="weather-title">Configuración del Pronóstico</h1>
+      <h1 className="weather-title">Weather Forecast Configuration</h1>
 
       <div className="weather-card">
         <div className="weather-row">
           <label>
             <Calendar size={18} />
-            Fecha de consulta
+            Query Date
             <input
               type="date"
               value={dates.from || ""}
@@ -43,75 +66,75 @@ export default function Dates({ onBack, dates, setDates, setCoords, onNext }) {
 
           <label>
             <MapPin size={18} />
-            Ubicación
+            Location
             <button
               className="map-btn"
               onClick={() => setIsModalOpen(true)}
             >
               <Map size={20} style={{ marginRight: 6 }} />
-              Seleccionar en Mapa
+              Select on Map
             </button>
           </label>
         </div>
 
-        {/* Muestra la ubicación elegida debajo */}
+        {/* Display selected location */}
         {location && (
           <div className="selected-location">
             <MapPin size={16} />
-            <span>Ubicación: {location.lat.toFixed(4)}, {location.lng.toFixed(4)}</span>
+            <span>Location: {location.lat.toFixed(4)}, {location.lng.toFixed(4)}</span>
           </div>
         )}
 
-        <div className="checkboxes">
-          <label>
-            <input
-              type="checkbox"
-              checked={selected.wind}
-              onChange={() => toggle("wind")}
-            />
-            <Wind size={16} />
-            Viento
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              checked={selected.precipitation}
-              onChange={() => toggle("precipitation")}
-            />
-            <CloudRain size={16} />
-            Precipitación
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              checked={selected.temperature}
-              onChange={() => toggle("temperature")}
-            />
-            <Thermometer size={16} />
-            Temperatura
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              checked={selected.cloud}
-              onChange={() => toggle("cloud")}
-            />
-            <Cloud size={16} />
-            Cobertura Nubes
-          </label>
+        <div className="metrics-section">
+          <div className="metrics-header">
+            <h3>Select Weather Data</h3>
+            <div className="quick-actions">
+              <button 
+                type="button" 
+                className="quick-btn select-all"
+                onClick={selectAll}
+              >
+                Select All
+              </button>
+              <button 
+                type="button" 
+                className="quick-btn deselect-all"
+                onClick={deselectAll}
+              >
+                Deselect All
+              </button>
+            </div>
+          </div>
+          
+          <div className="checkboxes">
+            {availableMetrics.map(metric => {
+              const IconComponent = metric.icon;
+              return (
+                <label key={metric.key}>
+                  <input
+                    type="checkbox"
+                    checked={selectedMetrics[metric.key] || false}
+                    onChange={() => toggleMetric(metric.key)}
+                  />
+                  <IconComponent size={16} />
+                  {metric.label}
+                </label>
+              );
+            })}
+          </div>
         </div>
 
         <button
           className="forecast-btn"
           onClick={onNext}
-          disabled={!dates.from || !location}
+          disabled={!dates.from || !location || !hasSelectedMetrics}
         >
           <Activity size={18} />
-          Obtener Pronóstico
+          Get Forecast
         </button>
       </div>
 
-      {/* Modal con el mapa */}
+      {/* Modal with map */}
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
         <div style={{ 
           textAlign: "center", 
@@ -129,7 +152,7 @@ export default function Dates({ onBack, dates, setDates, setCoords, onNext }) {
             fontWeight: "600"
           }}>
             <Map size={24} />
-            Selecciona tu ubicación
+            Select your location
           </h3>
           <div style={{ 
             borderRadius: "12px", 

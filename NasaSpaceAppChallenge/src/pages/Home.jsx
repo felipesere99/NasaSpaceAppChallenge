@@ -10,21 +10,21 @@ export default function Home({ onStart }) {
           <img src="./src/img/NASA.png" alt="NASA" className="logo nasa-logo" />
           <img src="./src/img/UCU.png" alt="UCU" className="logo ucu-logo" />
         </div>
-        <h1 className="home-title">Explora Patrones Climáticos Mundiales</h1>
-        <p className="home-sub">Utilizando datos avanzados de satélites de la NASA para predecir condiciones meteorológicas</p>
+        <h1 className="home-title">Explore Global Weather Patterns</h1>
+        <p className="home-sub">Using advanced NASA satellite data to predict weather conditions</p>
         <button className="home-cta" onClick={onStart}>
           <Rocket size={18} />
-          Verificar mi Clima
+          Check My Weather
           <Zap size={16} />
         </button>
         <div className="home-features">
           <div className="feature">
             <Satellite size={20} />
-            <span>Datos Satelitales</span>
+            <span>Satellite Data</span>
           </div>
           <div className="feature">
             <MapPin size={20} />
-            <span>Basado en Ubicación</span>
+            <span>Location Based</span>
           </div>
         </div>
       </header>
