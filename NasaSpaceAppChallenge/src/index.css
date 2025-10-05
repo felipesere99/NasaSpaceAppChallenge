@@ -30,6 +30,22 @@ body {
   min-height: 100vh;
 }
 
+/* animated blue/white page background with soft red accents */
+body {
+  background: radial-gradient(800px 400px at 10% 20%, rgba(10,60,140,0.18), transparent 12%),
+              radial-gradient(700px 300px at 90% 80%, rgba(255,255,255,0.06), transparent 10%),
+              radial-gradient(600px 200px at 50% 92%, rgba(220,20,60,0.05), transparent 6%),
+              linear-gradient(180deg, #072042 0%, #0e203a 40%, #111213 100%);
+  background-attachment: fixed;
+  animation: bgPulse 14s ease-in-out infinite alternate;
+}
+
+@keyframes bgPulse {
+  0% { background-position: 0% 0%, 100% 100%, 50% 92%, 0% 0%; }
+  50% { background-position: 4% 3%, 96% 97%, 52% 90%, 0% 0%; }
+  100% { background-position: 0% 0%, 100% 100%, 50% 92%, 0% 0%; }
+}
+
 h1 {
   font-size: 3.2em;
   line-height: 1.1;

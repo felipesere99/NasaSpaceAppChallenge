@@ -1,35 +1,55 @@
+import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
+import Home from './pages/Home.jsx'
+import Dates from './pages/Dates.jsx'
+import MapPage from './pages/Map.jsx'
+import Results from './pages/Results.jsx'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [coords, setCoords] = useState(null)
+  const [dates, setDates] = useState({ from: null, to: null })
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <Router>
+      <Routes>
+        <Route path="/" element={<HomeWrapper />} />
+        <Route path="/dates" element={<DatesWrapper dates={dates} setDates={setDates} />} />
+        <Route path="/map" element={<MapWrapper coords={coords} setCoords={setCoords} />} />
+        <Route path="/results" element={<Results coords={coords} dates={dates} />} />
+      </Routes>
+    </Router>
+  )
+  
+}
+
+
+function HomeWrapper() {
+  const navigate = useNavigate()
+  return <Home onStart={() => navigate('/dates')} />
+}
+
+function DatesWrapper({ dates, setDates }) {
+  const navigate = useNavigate()
+  return (
+    <Dates
+      onBack={() => navigate('/')}
+      dates={dates}
+      setDates={setDates}
+      onNext={() => navigate('/map')}
+    />
   )
 }
 
+function MapWrapper({ coords, setCoords }) {
+  const navigate = useNavigate()
+  return (
+    <MapPage
+      onBack={() => navigate('/dates')}
+      coords={coords}
+      setCoords={setCoords}
+      onCalculate={() => navigate('/results')}
+    />
+  )
+}
 export default App
