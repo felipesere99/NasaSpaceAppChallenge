@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import "./Dates.css";
 import Modal from "../components/Modal";
 import MapPicker from "../components/MapPicker";
-import { Map } from 'lucide-react';
+import { Map, Calendar, Wind, CloudRain, Thermometer, Cloud, MapPin, Activity } from 'lucide-react';
 
 
 export default function Dates({ onBack, dates, setDates, setCoords, onNext }) {
@@ -27,12 +27,13 @@ export default function Dates({ onBack, dates, setDates, setCoords, onNext }) {
 
   return (
     <div className="weather-root">
-      <h1 className="weather-title">Weather Guru</h1>
+      <h1 className="weather-title">Configuración del Pronóstico</h1>
 
       <div className="weather-card">
         <div className="weather-row">
           <label>
-            Date
+            <Calendar size={18} />
+            Fecha de consulta
             <input
               type="date"
               value={dates.from || ""}
@@ -41,55 +42,62 @@ export default function Dates({ onBack, dates, setDates, setCoords, onNext }) {
           </label>
 
           <label>
-            Location
+            <MapPin size={18} />
+            Ubicación
             <button
               className="map-btn"
               onClick={() => setIsModalOpen(true)}
             >
               <Map size={20} style={{ marginRight: 6 }} />
+              Seleccionar en Mapa
             </button>
           </label>
         </div>
 
         {/* Muestra la ubicación elegida debajo */}
         {location && (
-          <p className="selected-location">
-            📍 {location.lat.toFixed(2)}, {location.lng.toFixed(2)}
-          </p>
+          <div className="selected-location">
+            <MapPin size={16} />
+            <span>Ubicación: {location.lat.toFixed(4)}, {location.lng.toFixed(4)}</span>
+          </div>
         )}
 
-        <div className="weather-row checkboxes">
+        <div className="checkboxes">
           <label>
             <input
               type="checkbox"
               checked={selected.wind}
               onChange={() => toggle("wind")}
-            />{" "}
-            Wind
+            />
+            <Wind size={16} />
+            Viento
           </label>
           <label>
             <input
               type="checkbox"
               checked={selected.precipitation}
               onChange={() => toggle("precipitation")}
-            />{" "}
-            Precipitation
+            />
+            <CloudRain size={16} />
+            Precipitación
           </label>
           <label>
             <input
               type="checkbox"
               checked={selected.temperature}
               onChange={() => toggle("temperature")}
-            />{" "}
-            Temperature
+            />
+            <Thermometer size={16} />
+            Temperatura
           </label>
           <label>
             <input
               type="checkbox"
               checked={selected.cloud}
               onChange={() => toggle("cloud")}
-            />{" "}
-            Cloud cover
+            />
+            <Cloud size={16} />
+            Cobertura Nubes
           </label>
         </div>
 
@@ -98,14 +106,39 @@ export default function Dates({ onBack, dates, setDates, setCoords, onNext }) {
           onClick={onNext}
           disabled={!dates.from || !location}
         >
-          Get forecast!
+          <Activity size={18} />
+          Obtener Pronóstico
         </button>
       </div>
 
       {/* Modal con el mapa */}
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-        <h3 style={{ textAlign: "center" }}>Selecciona tu ubicación</h3>
-        <MapPicker onSelect={handleLocationSelect} />
+        <div style={{ 
+          textAlign: "center", 
+          padding: "2rem",
+          background: "transparent"
+        }}>
+          <h3 style={{ 
+            display: "flex", 
+            alignItems: "center", 
+            justifyContent: "center", 
+            gap: "0.5rem", 
+            margin: "0 0 1.5rem 0",
+            color: "var(--text-primary)",
+            fontSize: "1.5rem",
+            fontWeight: "600"
+          }}>
+            <Map size={24} />
+            Selecciona tu ubicación
+          </h3>
+          <div style={{ 
+            borderRadius: "12px", 
+            overflow: "hidden",
+            border: "1px solid var(--border-subtle)"
+          }}>
+            <MapPicker onSelect={handleLocationSelect} />
+          </div>
+        </div>
       </Modal>
     </div>
   );

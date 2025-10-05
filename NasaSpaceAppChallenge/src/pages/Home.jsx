@@ -1,5 +1,6 @@
 import React from 'react'
 import './Home.css'
+import { Rocket, Zap, Satellite, MapPin, Calendar } from 'lucide-react'
 
 export default function Home({ onStart }) {
   return (
@@ -9,21 +10,21 @@ export default function Home({ onStart }) {
           <img src="./src/img/NASA.png" alt="NASA" className="logo nasa-logo" />
           <img src="./src/img/UCU.png" alt="UCU" className="logo ucu-logo" />
         </div>
-        <h1 className="home-title">Explore Weather Patterns Worldwide</h1>
-        <p className="home-sub">Using NASA's advanced satellite data to predict weather conditions for your outdoor activities</p>
-        <button className="home-cta" onClick={onStart}>Check Your Weather</button>
+        <h1 className="home-title">Explora Patrones Climáticos Mundiales</h1>
+        <p className="home-sub">Utilizando datos avanzados de satélites de la NASA para predecir condiciones meteorológicas</p>
+        <button className="home-cta" onClick={onStart}>
+          <Rocket size={18} />
+          Verificar mi Clima
+          <Zap size={16} />
+        </button>
         <div className="home-features">
           <div className="feature">
-            <span className="feature-icon">🛰️</span>
-            <span>Satellite Data</span>
+            <Satellite size={20} />
+            <span>Datos Satelitales</span>
           </div>
           <div className="feature">
-            <span className="feature-icon">📍</span>
-            <span>Location Based</span>
-          </div>
-          <div className="feature">
-            <span className="feature-icon">📅</span>
-            <span>14-Day Forecast</span>
+            <MapPin size={20} />
+            <span>Basado en Ubicación</span>
           </div>
         </div>
       </header>

@@ -1,4 +1,5 @@
 import React from "react";
+import { X } from "lucide-react";
 import "./Modal.css";
 
 export default function Modal({ isOpen, onClose, children }) {
@@ -11,7 +12,7 @@ export default function Modal({ isOpen, onClose, children }) {
         onClick={(e) => e.stopPropagation()} // evita cerrar si clickeás dentro
       >
         <button className="modal-close" onClick={onClose}>
-          ✕
+          <X size={20} />
         </button>
         {children}
       </div>
