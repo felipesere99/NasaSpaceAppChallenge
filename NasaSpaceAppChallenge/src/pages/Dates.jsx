@@ -9,7 +9,6 @@ export default function Dates({ onBack, dates, setDates, setCoords, onNext, sele
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [location, setLocation] = useState(null);
 
-  // metricas disponibles desde el back
   const availableMetrics = [
     { key: 'temperature', label: 'Temperature', icon: Thermometer },
     { key: 'wind_speed', label: 'Wind Speed', icon: Wind },

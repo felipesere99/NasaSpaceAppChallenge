@@ -1,5 +1,12 @@
 const { apiClient } = require('../utils/api');
-const { fetchWeatherForecast, isDateInFuture } = require('./forecastService');
+const { fetchWeatherForecast, isDateInFuture, isDateToday } = require('./forecastService');
+
+const isDatePast = (dateString) => {
+  const inputDate = new Date(dateString);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return inputDate < today;
+};
 
 const fetchHistoricalWeather = async (latitude, longitude, date) => {
   const dateFormatted = date.replace(/-/g, '');
@@ -36,11 +43,11 @@ const fetchHistoricalWeather = async (latitude, longitude, date) => {
 };
 
 const fetchWeather = async (latitude, longitude, date) => {
-  if (isDateInFuture(date)) {
-    return await fetchWeatherForecast(latitude, longitude, date);
-  } else {
+  if (isDatePast(date)) {
     return await fetchHistoricalWeather(latitude, longitude, date);
   }
+  
+  return await fetchWeatherForecast(latitude, longitude, date);
 };
 
 module.exports = { fetchWeather };

@@ -1,10 +1,115 @@
+const axios = require('axios');
 const { apiClient } = require('../utils/api');
+require('dotenv').config();
 
 const isDateInFuture = (dateString) => {
   const inputDate = new Date(dateString);
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   return inputDate > today;
+};
+
+const isDateToday = (dateString) => {
+  const inputDate = new Date(dateString);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return inputDate.getTime() === today.getTime();
+};
+
+const getDaysFromNow = (dateString) => {
+  const inputDate = new Date(dateString);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  const diffTime = inputDate - today;
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  
+  return diffDays;
+};
+
+const isForecastableDate = (dateString) => {
+  const daysFromNow = getDaysFromNow(dateString);
+  const forecastDays = parseInt(process.env.FORECAST_API_DAYS) || 10;
+  // Incluir día actual (0) y próximos días hasta FORECAST_API_DAYS
+  return daysFromNow >= 0 && daysFromNow <= forecastDays;
+};
+
+// Obtener forecast de Open-Meteo (API real para próximos 10 días)
+const fetchRealForecast = async (latitude, longitude, date) => {
+  try {
+    const response = await axios.get('https://api.open-meteo.com/v1/forecast', {
+      params: {
+        latitude: latitude,
+        longitude: longitude,
+        start_date: date,
+        end_date: date,
+        daily: 'temperature_2m_max,temperature_2m_min,precipitation_sum,windspeed_10m_max,relative_humidity_2m_max',
+        timezone: 'auto'
+      }
+    });
+
+    const dailyData = response.data.daily;
+    const dateIndex = 0; // Solo estamos pidiendo un día
+
+    if (!dailyData.time || dailyData.time.length === 0) {
+      throw new Error('No forecast data available for the requested date');
+    }
+
+    return {
+      date: date,
+      type: 'forecast_real',
+      source: 'Open-Meteo API',
+      location: {
+        latitude: latitude,
+        longitude: longitude
+      },
+      predicted: {
+        temperature: {
+          max: {
+            value: dailyData.temperature_2m_max[dateIndex],
+            range: {
+              min: dailyData.temperature_2m_min[dateIndex],
+              max: dailyData.temperature_2m_max[dateIndex]
+            }
+          },
+          min: {
+            value: dailyData.temperature_2m_min[dateIndex],
+            range: {
+              min: dailyData.temperature_2m_min[dateIndex],
+              max: dailyData.temperature_2m_max[dateIndex]
+            }
+          }
+        },
+        wind_speed: {
+          value: dailyData.windspeed_10m_max[dateIndex],
+          range: {
+            min: 0,
+            max: dailyData.windspeed_10m_max[dateIndex]
+          }
+        },
+        precipitation: {
+          expected_mm: dailyData.precipitation_sum[dateIndex],
+          probability_of_rain: dailyData.precipitation_sum[dateIndex] > 0 ? 50 : 10,
+          range: {
+            min: 0,
+            max: dailyData.precipitation_sum[dateIndex] * 1.5
+          }
+        },
+        humidity: {
+          value: dailyData.relative_humidity_2m_max[dateIndex],
+          range: {
+            min: Math.max(0, dailyData.relative_humidity_2m_max[dateIndex] - 20),
+            max: Math.min(100, dailyData.relative_humidity_2m_max[dateIndex] + 10)
+          }
+        }
+      },
+      confidence: 95,
+      disclaimer: "Real-time forecast data from Open-Meteo API"
+    };
+  } catch (error) {
+    console.error('Error fetching real forecast:', error.message);
+    throw new Error('Failed to fetch real forecast: ' + error.message);
+  }
 };
 
 const getHistoricalDates = (dateString, yearsBack = 25) => {
@@ -159,10 +264,20 @@ const generateForecast = (statistics, targetDate) => {
 };
 
 const fetchWeatherForecast = async (latitude, longitude, date) => {
-  if (!isDateInFuture(date)) {
-    throw new Error('Use el endpoint regular para fechas pasadas o actuales');
+  const daysFromNow = getDaysFromNow(date);
+  const forecastDays = parseInt(process.env.FORECAST_API_DAYS) || 10;
+
+  // Si es hoy o una fecha cercana (próximos 7-10 días), usar API real de forecast
+  if (daysFromNow >= 0 && daysFromNow <= forecastDays) {
+    return await fetchRealForecast(latitude, longitude, date);
   }
-  
+
+  // Si es fecha pasada, usar datos históricos
+  if (daysFromNow < 0) {
+    throw new Error('Para fechas pasadas, use un endpoint diferente o no se puede acceder a este endpoint');
+  }
+
+  // Para fechas muy futuras (más allá del rango de forecast), usar el cálculo basado en datos históricos
   const historicalDates = getHistoricalDates(date, 40);
   
   if (historicalDates.length === 0) {
@@ -180,5 +295,7 @@ const fetchWeatherForecast = async (latitude, longitude, date) => {
 
 module.exports = { 
   fetchWeatherForecast, 
-  isDateInFuture 
+  isDateInFuture,
+  getDaysFromNow,
+  isForecastableDate
 };

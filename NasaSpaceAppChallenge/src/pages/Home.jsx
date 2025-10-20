@@ -1,11 +1,11 @@
 import React from 'react'
 import './Home.css'
-import { Rocket, Zap, Satellite, MapPin, Calendar } from 'lucide-react'
+import { Rocket, Zap, Satellite, MapPin } from 'lucide-react'
 
 export default function Home({ onStart }) {
   return (
     <div className="home-container">
-      <header className="home-header">
+      <div className="home-content">
         <div className="logos">
           <img src="./src/img/NASA.png" alt="NASA" className="logo nasa-logo" />
           <img src="./src/img/UCU.png" alt="UCU" className="logo ucu-logo" />
@@ -27,7 +27,7 @@ export default function Home({ onStart }) {
             <span>Location Based</span>
           </div>
         </div>
-      </header>
+      </div>
     </div>
   )
 }

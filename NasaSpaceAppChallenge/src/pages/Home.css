@@ -2,14 +2,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
+  min-height: calc(100vh - 80px);
   padding: 2rem;
   box-sizing: border-box;
   position: relative;
   overflow: hidden;
 }
 
-.home-header {
+.home-content {
   text-align: center;
   background: linear-gradient(135deg, 
     rgba(100,108,255,0.1), 
@@ -33,7 +33,7 @@
 }
 
 /* Subtle grid pattern overlay */
-.home-header::before {
+.home-content::before {
   content: "";
   position: absolute;
   top: 0;
@@ -292,7 +292,7 @@
 }
 
 @media (max-width: 768px) {
-  .home-header {
+  .home-content {
     padding: 2rem 1.5rem;
     margin: 1rem;
   }

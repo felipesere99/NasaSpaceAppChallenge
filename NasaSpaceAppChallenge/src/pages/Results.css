@@ -4,6 +4,8 @@
   display: flex;
   flex-direction: column;
   gap: 2rem;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .results-header {
@@ -106,6 +108,7 @@
   display: grid;
   gap: 2rem;
   grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  width: 100%;
 }
 
 .results-overview {
@@ -422,6 +425,112 @@
   }
 }
 
+/* 7-Day Forecast Grid */
+.forecast-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin: 2rem 0;
+  width: 100%;
+}
+
+.forecast-card {
+  background: linear-gradient(135deg,
+    var(--surface-primary) 0%,
+    var(--surface-secondary) 100%
+  );
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-lg);
+  padding: 1rem;
+  box-shadow: var(--shadow-medium);
+  backdrop-filter: blur(20px);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+  min-width: 0;
+}
+
+.forecast-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-strong);
+  border-color: var(--primary-blue);
+}
+
+.forecast-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 0.5rem;
+}
+
+.forecast-card-header h4 {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.forecast-card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.forecast-metric {
+  display: grid;
+  grid-template-columns: 20px 1fr;
+  align-items: start;
+  gap: 0.4rem;
+  padding: 0.3rem;
+  background: var(--surface-tertiary);
+  border-radius: var(--radius-sm);
+}
+
+.forecast-metric svg {
+  color: var(--primary-blue);
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+}
+
+.forecast-metric > div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.forecast-label {
+  font-size: 0.65rem;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.2px;
+  font-weight: 600;
+}
+
+.forecast-value {
+  font-size: 0.8rem;
+  color: var(--text-primary);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.forecast-description {
+  margin-top: 0.3rem;
+  padding-top: 0.4rem;
+  border-top: 1px solid var(--border-subtle);
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  line-height: 1.1;
+}
+
 @media (max-width: 520px) {
   .results-root {
     padding: 1rem;
@@ -447,5 +556,9 @@
   
   .metric-value {
     font-size: 1.2rem;
+  }
+  
+  .forecast-grid {
+    grid-template-columns: 1fr;
   }
 }

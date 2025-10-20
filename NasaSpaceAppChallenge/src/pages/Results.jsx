@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { getWeatherData } from "../services/weatherApi";
 import {
   ArrowLeft,
@@ -26,14 +26,22 @@ export default function Results({ coords, dates, selectedMetrics }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const location = useLocation();
+  const locationState = location.state;
 
   useEffect(() => {
     async function fetchData() {
-      if (!coords || !dates.from) return;
+      const finalCoords = locationState?.latitude 
+        ? { lat: locationState.latitude, lng: locationState.longitude }
+        : coords;
+      
+      const finalDate = locationState?.date || dates.from;
+
+      if (!finalCoords || !finalDate) return;
       setLoading(true);
       setError(null);
       try {
-        const data = await getWeatherData(coords.lat, coords.lng, dates.from);
+        const data = await getWeatherData(finalCoords.lat, finalCoords.lng, finalDate);
         setWeather(data);
       } catch (error) {
         console.error(error);
@@ -44,60 +52,60 @@ export default function Results({ coords, dates, selectedMetrics }) {
     }
 
     fetchData();
-  }, [coords, dates]);
+  }, [coords, dates, locationState]);
 
   const formatRange = (range) => {
     if (!range) return "—";
     return `${range.min} - ${range.max}`;
   };
 
-  // 🧠 Interpretación en lenguaje natural
+  // Interpretación en lenguaje natural
   function interpretWeather(weather) {
-  const messages = [];
-  const isForecast = weather.type === "forecast";
+    if (!weather) return "Sin datos disponibles";
+    
+    const messages = [];
+    const isForecast = weather.type === "forecast" || weather.type === "forecast_real";
 
-  const temp = isForecast
-    ? (weather.predicted.temperature.max.value + weather.predicted.temperature.min.value) / 2
-    : (weather.temperature.max + weather.temperature.min) / 2;
+    let temp = 0;
+    if (isForecast && weather.predicted?.temperature) {
+      temp = (weather.predicted.temperature.max.value + weather.predicted.temperature.min.value) / 2;
+    } else if (weather.temperature) {
+      temp = (weather.temperature.max + weather.temperature.min) / 2;
+    }
 
-  const wind = isForecast
-    ? weather.predicted.wind_speed.value
-    : weather.wind_speed;
+    const wind = isForecast
+      ? weather.predicted?.wind_speed?.value || 0
+      : weather.wind_speed || 0;
 
-  const rain = isForecast
-    ? weather.predicted.precipitation.expected_mm
-    : weather.precipitation;
+    const rain = isForecast
+      ? weather.predicted?.precipitation?.expected_mm || weather.predicted?.precipitation?.probability_of_rain || 0
+      : weather.precipitation || 0;
 
-  const humidity = isForecast
-    ? weather.predicted.humidity.value
-    : weather.humidity;
+    const humidity = isForecast
+      ? weather.predicted?.humidity?.value || 0
+      : weather.humidity || 0;
 
-  // ---- Temperatura ----
-  if (temp > 30) messages.push("Hace mucho calor 🔥");
-  else if (temp >= 25) messages.push("El día será cálido ☀️");
-  else if (temp >= 18) messages.push("Temperaturas agradables 🌤️");
-  else if (temp >= 10) messages.push("Día fresco 🌥️");
-  else messages.push("Clima frío 🧊");
+    if (temp > 30) messages.push("Hace mucho calor 🔥");
+    else if (temp >= 25) messages.push("El día será cálido ☀️");
+    else if (temp >= 18) messages.push("Temperaturas agradables 🌤️");
+    else if (temp >= 10) messages.push("Día fresco 🌥️");
+    else messages.push("Clima frío 🧊");
 
-  // ---- Viento ----
-  if (wind > 7) messages.push("Habrá mucho viento 💨");
-  else if (wind > 4) messages.push("Algo de viento 🌬️");
-  else messages.push("Poco viento 🍃");
+    if (wind > 7) messages.push("Habrá mucho viento 💨");
+    else if (wind > 4) messages.push("Algo de viento 🌬️");
+    else messages.push("Poco viento 🍃");
 
-  // ---- Precipitación ----
-  if (rain > 5) messages.push("Probabilidad de lluvia fuerte 🌧️");
-  else if (rain > 1) messages.push("Posibles lloviznas ☔");
-  else messages.push("Sin lluvias 🌞");
+    if (rain > 5) messages.push("Probabilidad de lluvia fuerte 🌧️");
+    else if (rain > 1) messages.push("Posibles lloviznas ☔");
+    else messages.push("Sin lluvias 🌞");
 
-  // ---- Humedad ----
-  if (humidity > 80) messages.push("Ambiente muy húmedo 💦");
-  else if (humidity > 60) messages.push("Humedad moderada 🌫️");
-  else messages.push("Ambiente seco 🌵");
+    if (humidity > 80) messages.push("Ambiente muy húmedo 💦");
+    else if (humidity > 60) messages.push("Humedad moderada 🌫️");
+    else messages.push("Ambiente seco 🌵");
 
-  return messages.join(" • ");
-}
+    return messages.join(" • ");
+  }
 
-  // Download functions
   const downloadJSON = () => {
     const dataToDownload = {
       ...weather,
@@ -122,10 +130,8 @@ export default function Results({ coords, dates, selectedMetrics }) {
   const downloadCSV = () => {
     const csvData = [];
     
-    // Header
     csvData.push(['Metric', 'Value', 'Unit', 'Range Min', 'Range Max']);
     
-    // General info
     csvData.push(['Date', weather.date, '', '', '']);
     csvData.push(['Type', weather.type, '', '', '']);
     csvData.push(['Latitude', weather.location.latitude, '°', '', '']);
@@ -135,7 +141,6 @@ export default function Results({ coords, dates, selectedMetrics }) {
       csvData.push(['Confidence', weather.confidence, '%', '', '']);
     }
     
-    // Metrics based on selection
     if (selectedMetrics.temperature && weather.predicted?.temperature) {
       csvData.push(['Temperature Max', weather.predicted.temperature.max.value, '°C', 
                    weather.predicted.temperature.max.range.min, weather.predicted.temperature.max.range.max]);
@@ -241,7 +246,11 @@ export default function Results({ coords, dates, selectedMetrics }) {
                 <CheckCircle size={18} />
                 <span className="overview-label">Type</span>
                 <span className="overview-value">
-                  {weather.type === "forecast" ? "Forecast" : "Historical"}
+                  {weather.type === "forecast" || weather.type === "forecast_real" 
+                    ? "Forecast" 
+                    : weather.type === "historical" 
+                    ? "Historical" 
+                    : weather.type}
                 </span>
               </div>
               <div className="overview-item">
@@ -282,31 +291,35 @@ export default function Results({ coords, dates, selectedMetrics }) {
                 Temperature
               </h3>
               <div className="weather-metrics">
-                {weather.type === "forecast" && weather.predicted ? (
+                {(weather.type === "forecast" || weather.type === "forecast_real") && weather.predicted ? (
                   <>
                     <div className="metric">
                       <div className="metric-header">
                         <span className="metric-label">Maximum</span>
                         <span className="metric-value hot">
-                          {weather.predicted.temperature.max.value}°C
+                          {weather.predicted.temperature?.max?.value || 'N/A'}°C
                         </span>
                       </div>
-                      <div className="metric-range">
-                        Range:{" "}
-                        {formatRange(weather.predicted.temperature.max.range)}°C
-                      </div>
+                      {weather.predicted.temperature?.max?.range && (
+                        <div className="metric-range">
+                          Range:{" "}
+                          {formatRange(weather.predicted.temperature.max.range)}°C
+                        </div>
+                      )}
                     </div>
                     <div className="metric">
                       <div className="metric-header">
                         <span className="metric-label">Minimum</span>
                         <span className="metric-value cold">
-                          {weather.predicted.temperature.min.value}°C
+                          {weather.predicted.temperature?.min?.value || 'N/A'}°C
                         </span>
                       </div>
-                      <div className="metric-range">
-                        Range:{" "}
-                        {formatRange(weather.predicted.temperature.min.range)}°C
-                      </div>
+                      {weather.predicted.temperature?.min?.range && (
+                        <div className="metric-range">
+                          Range:{" "}
+                          {formatRange(weather.predicted.temperature.min.range)}°C
+                        </div>
+                      )}
                     </div>
                   </>
                 ) : (
@@ -314,7 +327,7 @@ export default function Results({ coords, dates, selectedMetrics }) {
                     <div className="metric-header">
                       <span className="metric-label">Average</span>
                       <span className="metric-value primary">
-                        {weather.temperature?.avg}°C
+                        {weather.temperature?.avg || 'N/A'}°C
                       </span>
                     </div>
                   </div>
@@ -335,13 +348,13 @@ export default function Results({ coords, dates, selectedMetrics }) {
                   <div className="metric-header">
                     <span className="metric-label">Speed</span>
                     <span className="metric-value primary">
-                      {weather.type === "forecast" && weather.predicted
-                        ? `${weather.predicted.wind_speed.value} m/s`
-                        : `${weather.wind_speed} m/s`}
+                      {(weather.type === "forecast" || weather.type === "forecast_real") && weather.predicted
+                        ? `${weather.predicted.wind_speed?.value || 'N/A'} m/s`
+                        : `${weather.wind_speed || 'N/A'} m/s`}
                     </span>
                   </div>
-                  {weather.type === "forecast" &&
-                    weather.predicted?.wind_speed.range && (
+                  {(weather.type === "forecast" || weather.type === "forecast_real") &&
+                    weather.predicted?.wind_speed?.range && (
                       <div className="metric-range">
                         Range: {formatRange(weather.predicted.wind_speed.range)}{" "}
                         m/s
@@ -360,13 +373,13 @@ export default function Results({ coords, dates, selectedMetrics }) {
                 Precipitation
               </h3>
               <div className="weather-metrics">
-                {weather.type === "forecast" && weather.predicted ? (
+                {(weather.type === "forecast" || weather.type === "forecast_real") && weather.predicted ? (
                   <>
                     <div className="metric">
                       <div className="metric-header">
                         <span className="metric-label">Rain Probability</span>
                         <span className="metric-value primary">
-                          {weather.predicted.precipitation.probability_of_rain}%
+                          {weather.predicted.precipitation?.probability_of_rain || 'N/A'}%
                         </span>
                       </div>
                     </div>
@@ -374,13 +387,15 @@ export default function Results({ coords, dates, selectedMetrics }) {
                       <div className="metric-header">
                         <span className="metric-label">Expected Amount</span>
                         <span className="metric-value secondary">
-                          {weather.predicted.precipitation.expected_mm} mm
+                          {weather.predicted.precipitation?.expected_mm || 'N/A'} mm
                         </span>
                       </div>
-                      <div className="metric-range">
-                        Range:{" "}
-                        {formatRange(weather.predicted.precipitation.range)} mm
-                      </div>
+                      {weather.predicted.precipitation?.range && (
+                        <div className="metric-range">
+                          Range:{" "}
+                          {formatRange(weather.predicted.precipitation.range)} mm
+                        </div>
+                      )}
                     </div>
                   </>
                 ) : (
@@ -388,7 +403,7 @@ export default function Results({ coords, dates, selectedMetrics }) {
                     <div className="metric-header">
                       <span className="metric-label">Amount</span>
                       <span className="metric-value primary">
-                        {weather.precipitation} mm
+                        {weather.precipitation || 'N/A'} mm
                       </span>
                     </div>
                   </div>
@@ -409,13 +424,13 @@ export default function Results({ coords, dates, selectedMetrics }) {
                   <div className="metric-header">
                     <span className="metric-label">Level</span>
                     <span className="metric-value primary">
-                      {weather.type === "forecast" && weather.predicted
-                        ? `${weather.predicted.humidity.value}%`
-                        : `${weather.humidity}%`}
+                      {(weather.type === "forecast" || weather.type === "forecast_real") && weather.predicted
+                        ? `${weather.predicted.humidity?.value || 'N/A'}%`
+                        : `${weather.humidity || 'N/A'}%`}
                     </span>
                   </div>
-                  {weather.type === "forecast" &&
-                    weather.predicted?.humidity.range && (
+                  {(weather.type === "forecast" || weather.type === "forecast_real") &&
+                    weather.predicted?.humidity?.range && (
                       <div className="metric-range">
                         Range: {formatRange(weather.predicted.humidity.range)}%
                       </div>
@@ -426,7 +441,7 @@ export default function Results({ coords, dates, selectedMetrics }) {
           )}
 
           {/* Extra Info */}
-          {weather.type === "forecast" && (
+          {(weather.type === "forecast" || weather.type === "forecast_real") && (
             <div className="results-card results-info">
               <h3>
                 <Info size={20} />
@@ -437,6 +452,11 @@ export default function Results({ coords, dates, selectedMetrics }) {
                   <p>
                     <strong>Years analyzed:</strong>{" "}
                     {weather.historical_years_analyzed}
+                  </p>
+                )}
+                {weather.source && (
+                  <p>
+                    <strong>Source:</strong> {weather.source}
                   </p>
                 )}
                 {weather.disclaimer && (

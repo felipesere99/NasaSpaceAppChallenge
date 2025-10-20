@@ -9,7 +9,7 @@ export default function Modal({ isOpen, onClose, children }) {
     <div className="modal-overlay" onClick={onClose}>
       <div
         className="modal-content"
-        onClick={(e) => e.stopPropagation()} // evita cerrar si clickeás dentro
+        onClick={(e) => e.stopPropagation()}
       >
         <button className="modal-close" onClick={onClose}>
           <X size={20} />
