@@ -1,29 +1,28 @@
-import { BrowserRouter as Router, Routes, Route, useNavigate } from "react-router-dom";
-import { useState } from "react";
-import "./App.css";
-import { AuthProvider } from "./context/AuthContext";
-import Header from "./components/Header";
-import Home from "./pages/Home.jsx";
-import Dates from "./pages/Dates.jsx";
-import Results from "./pages/Results.jsx";
-import FavoriteForecast from "./pages/FavoriteForecast.jsx";
-import Login from "./pages/Login.jsx";
-import Register from "./pages/Register.jsx";
-import Profile from "./pages/Profile.jsx";
+import { useState } from 'react'
+import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom'
+import { AuthProvider } from './context/AuthContext'
+import Header from './components/Header'
+import Home from './pages/Home.jsx'
+import Dates from './pages/Dates.jsx'
+import Results from './pages/Results.jsx'
+import FavoriteForecast from './pages/FavoriteForecast.jsx'
+import Login from './pages/Login.jsx'
+import Register from './pages/Register.jsx'
+import Profile from './pages/Profile.jsx'
 
 function App() {
-  const [coords, setCoords] = useState(null);
-  const [dates, setDates] = useState({ from: null, to: null });
+  const [dates, setDates] = useState({ from: '' })
+  const [coords, setCoords] = useState(null)
   const [selectedMetrics, setSelectedMetrics] = useState({
     temperature: false,
     wind_speed: false,
     precipitation: false,
     humidity: false
-  });
+  })
 
   return (
     <AuthProvider>
-      <Router>
+      <BrowserRouter>
         <Header />
         <Routes>
           <Route path="/" element={<HomeWrapper />} />
@@ -54,7 +53,7 @@ function App() {
             } 
           />
         </Routes>
-      </Router>
+      </BrowserRouter>
     </AuthProvider>
   );
 }
