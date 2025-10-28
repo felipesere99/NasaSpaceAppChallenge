@@ -1,4 +1,5 @@
 const weatherService = require('../services/weatherService');
+const redis = require('../lib/redisClient'); //agregamos redis
 
 const getWeatherByCoordinates = async (req, res, next) => {
   try {
@@ -32,9 +33,27 @@ const getWeatherByCoordinates = async (req, res, next) => {
       });
     }
 
+    // clave distinta para redis
+    const cacheKey = `weather:${lat}:${lon}:${date}`;
+
+    // revisamos si ya está en caché
+    const cached = await redis.get(cacheKey);
+    if (cached) {
+      res.set('Cache-Control', 'no-store');//PARA QUE NO CACHEE 2 VECES CON EL NAVEGADOR
+      console.log('Respuesta servida desde Redis');//para ver la respuesta
+      return res.json(JSON.parse(cached));
+    }
+
+    // si no está cacheado pedimos los datos a la api
     const data = await weatherService.fetchWeather(lat, lon, date);
+
+    // guardamos en caché por 10 minutos (600 segundos)
+    await redis.setEx(cacheKey, 600, JSON.stringify(data));
+    console.log('Respuesta guardada en Redis');
+    res.set('Cache-Control', 'no-store');//MISMO
     res.json(data);
   } catch (err) {
+    console.error('Error en getWeatherByCoordinates:', err);
     next(err);
   }
 };
