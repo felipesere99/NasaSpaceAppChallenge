@@ -40,7 +40,7 @@ export default function FavoriteForecast() {
         );
         
         setForecast(response.data);
-      } catch {
+      } catch (err) {
         setError("Error fetching forecast data");
       } finally {
         setLoading(false);

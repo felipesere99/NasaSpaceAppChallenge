@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import "./Dates.css";
 import Modal from "../components/Modal";
 import MapPicker from "../components/MapPicker";
-import { Map, Calendar, Wind, CloudRain, Thermometer, Cloud, MapPin, Activity, ArrowLeft } from 'lucide-react';
+import { Map, Calendar, Wind, CloudRain, Thermometer, Cloud, MapPin, Activity } from 'lucide-react';
 
 
 export default function Dates({ onBack, dates, setDates, setCoords, onNext, selectedMetrics, setSelectedMetrics }) {
@@ -49,16 +49,6 @@ export default function Dates({ onBack, dates, setDates, setCoords, onNext, sele
 
   return (
     <div className="weather-root">
-      {onBack && (
-        <button 
-          type="button" 
-          className="back-btn" 
-          onClick={onBack}
-        >
-          <ArrowLeft size={18} />
-          Back
-        </button>
-      )}
       <h1 className="weather-title">Weather Forecast Configuration</h1>
 
       <div className="weather-card">

@@ -86,12 +86,6 @@
   color: white;
 }
 
-.logout-btn:hover {
-  background: linear-gradient(135deg, #ff6a6a, #ff5252);
-  border-color: #ff5252;
-  color: white;
-}
-
 @media (max-width: 768px) {
   .header-content {
     padding: 1rem;

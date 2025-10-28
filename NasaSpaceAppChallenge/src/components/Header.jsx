@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
-import { LogIn, LogOut, User } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { LogIn, User } from 'lucide-react';
 import './Header.css';
 
 export default function Header() {
@@ -30,23 +30,14 @@ export default function Header() {
 
         <nav className="header-nav">
           {user ? (
-            <>
-              <button 
-                className="auth-btn profile-btn" 
-                onClick={handleProfileClick}
-                title={`Profile - ${user.username}`}
-              >
-                <User size={18} />
-                <span className="username">{user.username}</span>
-              </button>
-              <button 
-                className="auth-btn logout-btn" 
-                onClick={handleLogout}
-              >
-                <LogOut size={18} />
-                Salir
-              </button>
-            </>
+            <button 
+              className="auth-btn profile-btn" 
+              onClick={handleProfileClick}
+              title={`Profile - ${user.username}`}
+            >
+              <User size={18} />
+              <span className="username">{user.username}</span>
+            </button>
           ) : (
             <button 
               className="auth-btn login-btn" 

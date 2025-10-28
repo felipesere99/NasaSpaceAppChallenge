@@ -20,7 +20,6 @@ import {
   Database,
 } from "lucide-react";
 import "./Results.css";
-import { formatRange, interpretWeather } from "../utils/weather";
 
 export default function Results({ coords, dates, selectedMetrics }) {
   const [weather, setWeather] = useState(null);
@@ -54,6 +53,58 @@ export default function Results({ coords, dates, selectedMetrics }) {
 
     fetchData();
   }, [coords, dates, locationState]);
+
+  const formatRange = (range) => {
+    if (!range) return "—";
+    return `${range.min} - ${range.max}`;
+  };
+
+  // Interpretación en lenguaje natural
+  function interpretWeather(weather) {
+    if (!weather) return "Sin datos disponibles";
+    
+    const messages = [];
+    const isForecast = weather.type === "forecast" || weather.type === "forecast_real";
+
+    let temp = 0;
+    if (isForecast && weather.predicted?.temperature) {
+      temp = (weather.predicted.temperature.max.value + weather.predicted.temperature.min.value) / 2;
+    } else if (weather.temperature) {
+      temp = (weather.temperature.max + weather.temperature.min) / 2;
+    }
+
+    const wind = isForecast
+      ? weather.predicted?.wind_speed?.value || 0
+      : weather.wind_speed || 0;
+
+    const rain = isForecast
+      ? weather.predicted?.precipitation?.expected_mm || weather.predicted?.precipitation?.probability_of_rain || 0
+      : weather.precipitation || 0;
+
+    const humidity = isForecast
+      ? weather.predicted?.humidity?.value || 0
+      : weather.humidity || 0;
+
+    if (temp > 30) messages.push("Hace mucho calor 🔥");
+    else if (temp >= 25) messages.push("El día será cálido ☀️");
+    else if (temp >= 18) messages.push("Temperaturas agradables 🌤️");
+    else if (temp >= 10) messages.push("Día fresco 🌥️");
+    else messages.push("Clima frío 🧊");
+
+    if (wind > 7) messages.push("Habrá mucho viento 💨");
+    else if (wind > 4) messages.push("Algo de viento 🌬️");
+    else messages.push("Poco viento 🍃");
+
+    if (rain > 5) messages.push("Probabilidad de lluvia fuerte 🌧️");
+    else if (rain > 1) messages.push("Posibles lloviznas ☔");
+    else messages.push("Sin lluvias 🌞");
+
+    if (humidity > 80) messages.push("Ambiente muy húmedo 💦");
+    else if (humidity > 60) messages.push("Humedad moderada 🌫️");
+    else messages.push("Ambiente seco 🌵");
+
+    return messages.join(" • ");
+  }
 
   const downloadJSON = () => {
     const dataToDownload = {
