@@ -1,13 +1,26 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 
-const dbPath = path.join(__dirname, '../../database.db');
+const resolveDbPath = () => {
+  const overridePath = process.env.SQLITE_DB_PATH;
+  if (!overridePath) {
+    return path.join(__dirname, '../../database.db');
+  }
+
+  if (overridePath === ':memory:') {
+    return ':memory:';
+  }
+
+  return path.resolve(process.cwd(), overridePath);
+};
+
+const dbPath = resolveDbPath();
 
 const db = new sqlite3.Database(dbPath, (err) => {
   if (err) {
     console.error('Error al conectar con SQLite:', err.message);
   } else {
-    console.log('Conectado a la base de datos SQLite');
+    console.log(`Conectado a la base de datos SQLite (${dbPath})`);
   }
 });
 

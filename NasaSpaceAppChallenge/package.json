@@ -8,7 +8,9 @@
     "build": "vite build",
     "test": "node --test",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "qa": "npm run lint && npm test",
+    "ci": "npm run qa && npm run build"
   },
   "dependencies": {
     "@react-google-maps/api": "^2.20.7",
