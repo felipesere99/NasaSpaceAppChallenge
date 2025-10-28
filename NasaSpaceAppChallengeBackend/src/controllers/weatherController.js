@@ -1,7 +1,5 @@
-const { fetchWeather } = require('../services/weatherService');
-
+const weatherService = require('../services/weatherService');
 const redis = require('../lib/redisClient'); //agregamos redis
-
 
 const getWeatherByCoordinates = async (req, res, next) => {
   try {
@@ -47,7 +45,7 @@ const getWeatherByCoordinates = async (req, res, next) => {
     }
 
     // si no está cacheado pedimos los datos a la api
-    const data = await fetchWeather(lat, lon, date);
+    const data = await weatherService.fetchWeather(lat, lon, date);
 
     // guardamos en caché por 10 minutos (600 segundos)
     await redis.setEx(cacheKey, 600, JSON.stringify(data));
@@ -61,8 +59,3 @@ const getWeatherByCoordinates = async (req, res, next) => {
 };
 
 module.exports = { getWeatherByCoordinates };
-
-
-
-
-

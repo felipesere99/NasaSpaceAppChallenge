@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom'
-import { AuthProvider } from './context/AuthContext'
+import { AuthProvider } from './context/AuthProvider'
 import Header from './components/Header'
 import Home from './pages/Home.jsx'
 import Dates from './pages/Dates.jsx'

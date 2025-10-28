@@ -11,6 +11,29 @@
   position: relative;
 }
 
+.back-btn {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-medium);
+  background: var(--surface-secondary);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 1rem;
+  text-decoration: none;
+}
+
+.back-btn:hover {
+  color: var(--text-primary);
+  border-color: var(--border-accent);
+  background: var(--surface-accent);
+  transform: translateY(-1px);
+}
+
 /* --- Enhanced title with gradient --- */
 .weather-title {
   font-size: 2.8rem;
