@@ -1,4 +1,4 @@
-const { fetchWeather } = require('../services/weatherService');
+const weatherService = require('../services/weatherService');
 
 const getWeatherByCoordinates = async (req, res, next) => {
   try {
@@ -32,7 +32,7 @@ const getWeatherByCoordinates = async (req, res, next) => {
       });
     }
 
-    const data = await fetchWeather(lat, lon, date);
+    const data = await weatherService.fetchWeather(lat, lon, date);
     res.json(data);
   } catch (err) {
     next(err);
